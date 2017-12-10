@@ -63,6 +63,14 @@ void Init (size_t size) {
 addrs_t Malloc (size_t size) { // This fails in the edge case of first node deleted.
   struct node * pointer;
   struct node * look_ahead;
+  if(Head == NULL){
+    struct node * new = malloc(sizeof(struct node));
+    init_node_types_3(new,pointer->end,pointer->end+size,pointer->next);
+    pointer->next = new;
+    return new->start;
+  }
+
+  else{
   pointer = Head->next;
   size = size+(0x8-size%0x8)%0x8;
   while(pointer!=NULL){
@@ -86,6 +94,7 @@ addrs_t Malloc (size_t size) { // This fails in the edge case of first node dele
   }
   printf("Error");
   return (NULL);
+}
 }
 
 // free memory address
@@ -127,8 +136,12 @@ addrs_t *VMalloc (size_t size){
   struct node * look_ahead;
   if(Head == NULL){
     struct node * new = malloc(sizeof(struct node));
+    init_node_types_3(new,pointer->end,pointer->end+size,pointer->next);
+    pointer->next = new;
+    return new->start;
   }
-  if(Head != NULL){
+
+  else{
     pointer = Head->next;
     size = size+(0x8-size%0x8)%0x8;
     while(pointer!=NULL){
