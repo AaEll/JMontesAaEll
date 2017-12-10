@@ -76,7 +76,11 @@ addrs_t Malloc (size_t size) {
 			struct node * new = malloc(sizeof(struct node));
 			init_node_types_3(new,pointer->end,pointer->end+size,pointer->next);
 			pointer->next = new;
+<<<<<<< HEAD
 			return new->start;
+=======
+			return new->start;		
+>>>>>>> 3290483d880791fb9b16bfef0a9c849dfd1dcc28
 		}
     }
     else if (TOTALSIZE+Head->end - pointer->end >=size){ // IF we reach the end of the linked list, THEN check if there is space
@@ -106,13 +110,20 @@ void Free (addrs_t addr) {
 }
 
 addrs_t Put (any_t data, size_t size) {
+<<<<<<< HEAD
   addrs_t rtnVal = Malloc (size);
   memmove(rtnVal,data,size);
+=======
+  /*TODO add the "data" to the position rtnval */
+  addrs_t rtnVal = Malloc (size); 
+  memmove(&data,rtnVal,size);
+>>>>>>> 3290483d880791fb9b16bfef0a9c849dfd1dcc28
   return rtnVal;
 }
 
 void Get (any_t return_data, addrs_t addr, size_t size) {
   memmove(return_data, addr, size); //This is giving a segfault
+<<<<<<< HEAD
   Free(addr);
 }
 
@@ -194,3 +205,18 @@ void VGet (any_t return_data, addrs_t *addr, size_t size) {
     Finally, de-allocate size bytes of memory using VFree() with addr
     pointing to a redirection table entry.
 }
+=======
+  /*
+  int i;
+  struct node* pointer = Head;
+  for (i=0; i<size; i++){
+	  if(pointer.start==addr){
+		  *((char*)(return_data)) = *((char*)(addr));
+	  }
+	  pointer = pointer->next;
+  }*/
+  Free(addr);
+}
+
+
+>>>>>>> 3290483d880791fb9b16bfef0a9c849dfd1dcc28
