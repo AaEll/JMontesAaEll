@@ -13,6 +13,8 @@
 typedef char *addrs_t;
 typedef void *any_t;
 
+//Part 1
+
 // Linked list architecture for tracking
 
 struct node{
@@ -74,7 +76,7 @@ addrs_t Malloc (size_t size) { // This fails in the edge case of first node dele
         return new->start;
       }
     }
-    else if (TOTALSIZE - *(char*)pointer->end >=size){ // IF we reach the end of the array
+    else if (TOTALSIZE - pointer->end >=size){ // IF we reach the end of the array
       struct node * new = malloc(sizeof(struct node));
       init_node_types_2(new,pointer->end,pointer->end+size);
       pointer->next = new;
@@ -82,6 +84,7 @@ addrs_t Malloc (size_t size) { // This fails in the edge case of first node dele
     }
     pointer = look_ahead;
   }
+  printf("Error");
   return (NULL);
 }
 
@@ -113,6 +116,62 @@ void Get (any_t return_data, addrs_t addr, size_t size) {
   }
   Free(addr);
 }
+
+// Part 2
+
+// VMalloc, VFree, VPut, and VGet prototypes initialization
+// Note: These functions behave almost identically to Malloc() and Free(), except they work with POINTERS to addrs_t
+
+addrs_t *VMalloc (size_t size){
+  struct node * pointer;
+  struct node * look_ahead;
+  if(Head == NULL){
+    struct node * new = malloc(sizeof(struct node));
+  }
+  if(Head != NULL){
+    pointer = Head->next;
+    size = size+(0x8-size%0x8)%0x8;
+    while(pointer!=NULL){
+      look_ahead = pointer->next;
+      if (look_ahead != NULL){
+        if (look_ahead->start-pointer->end>=size){
+          // Make a new node and set pointer.next = to it, and its pointer to look_ahead
+          struct node * new = malloc(sizeof(struct node));
+          init_node_types_3(new,pointer->end,pointer->end+size,pointer->next);
+          pointer->next = new;
+          return new->start;
+        }
+  }
+}
+
+void VFree (addrs_t *addr){
+  struct node* current = Head;
+  while (current!=NULL){
+    if ( (*(char*)(current->next)) == (*(char*)(addr)) ){
+      current->next = current->next->next;
+      free(addr);
+      break;
+    }
+    current = current->next;
+  }
+}
+
+addrs_t *VPut (any_t data, size_t size) {
+
+   Allocate size bytes from M2 using VMalloc().
+   Copy size bytes of data into Malloc'd memory.
+   You can assume data is a storage area outside M2.
+   Return pointer to redirection table for Malloc'd memory.
+}
+
+void VGet (any_t return_data, addrs_t *addr, size_t size) {
+    Copy size bytes from the memory area, M2, to data address. The
+    addr argument specifies a pointer to a redirection table entry.
+    As with VPut(), you can assume data is a storage area outside M2.
+    Finally, de-allocate size bytes of memory using VFree() with addr
+    pointing to a redirection table entry.
+}
+
 
 int main(){
   return 0;
