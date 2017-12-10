@@ -159,12 +159,19 @@ addrs_t *VMalloc (size_t size){
 
 void VFree (addrs_t *addr){
   struct node* current = Head;
-  while (current!=NULL){
+  while (current!= NULL){
     if ( (*(char*)(current->next)) == (*(char*)(addr)) ){
       current->next = current->next->next;
       free(addr);
       break;
     }
+  struct node* sweep = Head;
+  int i;
+  for(i = 0; i < size_t; i++){
+    if(struct sweep == NULL){
+      free(addr);
+    }
+  }
     current = current->next;
   }
 }
