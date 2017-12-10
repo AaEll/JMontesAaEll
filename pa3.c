@@ -22,26 +22,27 @@ struct node{
   addrs_t start;
   // end of memory chunk
   addrs_t end;
-  // any_t data value
+  
+  // next node in linked list
   struct node *next;
   // previous item in linked list
 };
 
-// (NC) node constructor end of linked list
+// (NC) node null constructor
 void init_node_types_1(struct node* n){
    n->start = NULL;
    n->end = NULL;
    n->next = NULL;
 }
 
-//(NC)
+//(NC) node constructor for end of linked list
 void init_node_types_2(struct node* n, addrs_t start, addrs_t end){
    n->start = start;
    n->end = end;
    n->next = NULL;
 }
 
-// (NC)
+// (NC) node constructor for middle of linked list
 void init_node_types_3(struct node* n, addrs_t start, addrs_t end, struct node* nextNode){
    n->start = start;
    n->end = end;
@@ -51,50 +52,53 @@ void init_node_types_3(struct node* n, addrs_t start, addrs_t end, struct node* 
 // Init head of list
 struct node * Head;
 size_t TOTALSIZE;
+
 // Init func
 void Init (size_t size) {
    addrs_t baseptr;
    baseptr = (addrs_t) malloc (size);
    Head = malloc(sizeof(struct node));
-   init_node_types_2(Head,NULL, baseptr);
+   init_node_types_2(Head,baseptr, baseptr);
    TOTALSIZE = size;
 }
 
-addrs_t Malloc (size_t size) { // This fails in the edge case of first node deleted.
+addrs_t Malloc (size_t size) {
   struct node * pointer;
   struct node * look_ahead;
-  if(Head == NULL){
-    struct node * new = malloc(sizeof(struct node));
-    init_node_types_3(new,pointer->end,pointer->end+size,pointer->next);
-    pointer->next = new;
+  size = size+(0x8-size%0x8)%0x8;
+  if(Head == NULL){ // if Init has not been used, then allocate just enough space for this item
+	addrs_t baseptr; // maybe remove this
+	baseptr = (addrs_t) malloc (size)
+    Head = malloc(sizeof(struct node));
+	struct node * new;
+	new = malloc(sizeof(struct node));
+	init_node_types_3(Head,baseptr-1, baseptr,new);
+	init_node_type_2(new,baseptr,baseptr+size+1);	
+	TOTALSIZE = size;
     return new->start;
   }
-
-  else{
-  pointer = Head->next;
-  size = size+(0x8-size%0x8)%0x8;
+  pointer = Head;
   while(pointer!=NULL){
     look_ahead = pointer->next;
     if (look_ahead != NULL){
       if (look_ahead->start-pointer->end>=size){
         // Make a new node and set pointer.next = to it, and its pointer to look_ahead
         struct node * new = malloc(sizeof(struct node));
-        init_node_types_3(new,pointer->end,pointer->end+size,pointer->next);
+        init_node_types_3(new,pointer->end,pointer->end+size+1,pointer->next);
         pointer->next = new;
         return new->start;
       }
     }
-    else if (TOTALSIZE - pointer->end >=size){ // IF we reach the end of the array
+    else if (TOTALSIZE+Head->end - pointer->end >=size){ // IF we reach the end of the linked list, THEN check if there is space
       struct node * new = malloc(sizeof(struct node));
-      init_node_types_2(new,pointer->end,pointer->end+size);
+      init_node_types_2(new,pointer->end,pointer->end+size+1);
       pointer->next = new;
       return new->start;
     }
     pointer = look_ahead;
   }
-  printf("Error");
+  printf("NoSpaceLeftError : no space left");
   return (NULL);
-}
 }
 
 // free memory address
@@ -102,8 +106,9 @@ void Free (addrs_t addr) {
   struct node* current = Head;
   while (current!=NULL){
     if ( (*(char*)(current->next)) == (*(char*)(addr)) ){
-      current->next = current->next->next;
-      free(addr);
+	  struct node* temp = current->next;
+	  current->next = current->next->next;
+	  free(temp);
       break;
     }
     current = current->next;
@@ -112,17 +117,14 @@ void Free (addrs_t addr) {
 
 addrs_t Put (any_t data, size_t size) {
   /*TODO add the "data" to the position rtnval */
-  addrs_t rtnVal = Malloc (size);
+  addrs_t rtnVal = Malloc (size); 
   *((char*)(rtnVal))= *((char*)(data));
   rtnVal = *((addrs_t*)(rtnVal));
   return rtnVal;
 }
 
 void Get (any_t return_data, addrs_t addr, size_t size) {
-  int i;
-  for(i = 0; i < size; i++){
-    *((char*)(return_data)) = *((char*)(addr));
-  }
+  memcpy(return_data, addr, size);
   Free(addr);
 }
 
