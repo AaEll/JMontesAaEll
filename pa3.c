@@ -100,11 +100,11 @@ void Free (addrs_t addr) {
   struct node* current = Head;
   while (current!=NULL){
     struct node* temp = current->next;
-    if ( ((char*)(temp->start)) == ((char*)(addr)) ){
-	  current->next = current->next->next;
-	  free(temp);
-      break;
-    }
+		if (((char*)(temp->start)) == ((char*)(addr)) ){
+		  current->next = current->next->next;
+		  free(temp);
+		  break;
+		}
     current = temp;
   }
 }
@@ -122,6 +122,7 @@ addrs_t Put (any_t data, size_t size) {
 }
 
 void Get (any_t return_data, addrs_t addr, size_t size) {
+<<<<<<< HEAD
   memmove(return_data, addr, size); //This is giving a segfault
 <<<<<<< HEAD
   Free(addr);
@@ -215,6 +216,9 @@ void VGet (any_t return_data, addrs_t *addr, size_t size) {
 	  }
 	  pointer = pointer->next;
   }*/
+=======
+  memmove(return_data, addr, size);
+>>>>>>> 1c96bbded24b16b40d5c1247a6d1074fa16be35d
   Free(addr);
 }
 
