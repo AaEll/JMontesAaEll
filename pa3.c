@@ -228,5 +228,24 @@ void VGet (any_t return_data, addrs_t *addr, size_t size) {
   <<<<<<< HEAD
     VFree(addr);
 }
+<<<<<<< HEAD
+=======
+=======
+  /*
+  int i;
+  struct node* pointer = Head;
+  for (i=0; i<size; i++){
+	  if(pointer.start==addr){
+		  *((char*)(return_data)) = *((char*)(addr));
+	  }
+	  pointer = pointer->next;
+  }*/
+=======
+  memmove(return_data, addr, size);
+>>>>>>> 1c96bbded24b16b40d5c1247a6d1074fa16be35d
+  Free(addr);
+}
+
+>>>>>>> a17e8eb4757816e6e21fa3d8cec94b89dd1b6bf0
 
 >>>>>>> 3290483d880791fb9b16bfef0a9c849dfd1dcc28
