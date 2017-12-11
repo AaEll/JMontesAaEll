@@ -143,11 +143,12 @@ void heap_init(size_t size){
   printf("value of a = 0x%08x",baseptr);
 }
 
-// VMalloc
+
 
 // Init VHead for heap
 struct node * VHead;
 
+// VMalloc
  *VMalloc (size_t size){
   struct node * VPointer;
   struct node * VLook_ahead;
