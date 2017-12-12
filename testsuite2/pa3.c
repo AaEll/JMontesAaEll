@@ -108,7 +108,13 @@ void Free (addrs_t addr) {
 // Put
 addrs_t Put (any_t data, size_t size) {
   addrs_t rtnVal = Malloc (size);
+<<<<<<< HEAD
   memmove(rtnVal,data , size);
+=======
+  if (rtnVal!=NULL){
+	memmove( rtnVal,data, size);
+  }
+>>>>>>> d5165040cd612f6fa3ab33d971efcd33446c6c9b
   return rtnVal;
 }
 

@@ -138,8 +138,12 @@ int test_ff(){
 int test_maxNumOfAlloc(){
   int count = 0;
   char *d = "x";
+  printf("FF\n");
   const int testCap = 1000000;
   ADDRS allocs[testCap];
+  printf("FF\n");
+  printf("FF\n");
+
 
   while ((allocs[count]=PUT(d,1)) && count < testCap){
     if (DATA_OF(allocs[count])!='x') break;
