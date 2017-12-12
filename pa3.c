@@ -59,7 +59,7 @@ void Init (size_t size) {
    Head = malloc(sizeof(struct node));
    init_node_types_2(Head,baseptr, baseptr);
    TOTALSIZE = size;
-	printf("value of a = 0x%08x",baseptr);
+	printf("value of a = %08llx",(uint64_t)baseptr);
 }
 
 // Malloc
@@ -76,12 +76,8 @@ addrs_t Malloc (size_t size) {
   			struct node * new = malloc(sizeof(struct node));
   			init_node_types_3(new,pointer->end,pointer->end+size,pointer->next);
   			pointer->next = new;
-  <<<<<<< HEAD
   			return new->start;
-  =======
-  			return new->start;
-  >>>>>>> 3290483d880791fb9b16bfef0a9c849dfd1dcc28
-  		}
+    		}
     }
     else if (TOTALSIZE+Head->end - pointer->end >=size){ // IF we reach the end of the linked list, THEN check if there is space
       struct node * new = malloc(sizeof(struct node));
@@ -111,27 +107,21 @@ void Free (addrs_t addr) {
 
 // Put
 addrs_t Put (any_t data, size_t size) {
-<<<<<<< HEAD
   addrs_t rtnVal = Malloc (size);
-  memmove(rtnVal,data,size);
-=======
-  /*TODO add the "data" to the position rtnval */
-  addrs_t rtnVal = Malloc (size);
-  memmove(&data,rtnVal,size);
->>>>>>> 3290483d880791fb9b16bfef0a9c849dfd1dcc28
+  memmove(data, rtnVal, size);
   return rtnVal;
 }
 
 // Get
 void Get (any_t return_data, addrs_t addr, size_t size) {
-<<<<<<< HEAD
-  memmove(return_data, addr, size); //This is giving a segfault
-<<<<<<< HEAD
+  memmove(return_data, addr, size);
   Free(addr);
 }
 
 // Part 2
 
+// Init VHead for heap
+struct node * VHead;
 
 //init array dynamically in heap
 void heap_init(size_t size){
@@ -140,16 +130,11 @@ void heap_init(size_t size){
   VHead = malloc(sizeof(struct node));
   init_node_types_2(Head,baseptr, baseptr);
   TOTALSIZE = size;
-  printf("value of a = 0x%08x",baseptr);
+  printf("value of a = %08llx",(uint64_t)baseptr);
 }
 
-
-
-// Init VHead for heap
-struct node * VHead;
-
 // VMalloc
- *VMalloc (size_t size){
+addrs_t *VMalloc (size_t size){
   struct node * VPointer;
   struct node * VLook_ahead;
   struct node * pointer;
@@ -168,7 +153,7 @@ struct node * VHead;
   			pointer->next = new;
         //pointer to pointer
         VPointer = pointer;
-  			return VPointer->start;
+  			return (addrs_t*) VPointer->start;
   		}
     }
     else if (TOTALSIZE+Head->end - pointer->end >=size){ // IF we reach the end of the linked list, THEN check if there is space
@@ -177,7 +162,7 @@ struct node * VHead;
       pointer->next = new;
       //pointer to pointer
       VPointer->next = pointer;
-      return VPointer->start;
+      return (addrs_t*)VPointer->start;
     }
     pointer = look_ahead;
     VPointer = VLook_ahead;
@@ -202,8 +187,8 @@ void VFree (addrs_t *addr){
     while(current != NULL){
       struct node* temp = current->next;
       if(temp != NULL){
-        memmove(current->end,temp->start,(*uint64_t)temp->end-(*uint64_t)temp->start);
-        temp->end = current->end+(*uint64_t)temp->end-(*uint64_t)temp->start);
+        memmove(current->end,temp->start,(uint64_t)temp->end-(uint64_t)temp->start);
+        temp->end = current->end+(uint64_t)temp->end-(uint64_t)temp->start;
         temp->start = current->end;
       }
     }
@@ -211,41 +196,13 @@ void VFree (addrs_t *addr){
 
 // VPut
 addrs_t *VPut (any_t data, size_t size) {
-   <<<<<<< HEAD
-     addrs_t rtnVal = VMalloc (size);
-     memmove(rtnVal,data,size);
-   =======
-     addrs_t rtnVal = VMalloc (size);
+     addrs_t* rtnVal = VMalloc (size);
      memmove(rtnVal, data, size);
-   >>>>>>> 3290483d880791fb9b16bfef0a9c849dfd1dcc28
      return rtnVal;
    }
 
 // VGet
 void VGet (any_t return_data, addrs_t *addr, size_t size) {
-  <<<<<<< HEAD
     memmove(return_data, addr, size);
-  <<<<<<< HEAD
     VFree(addr);
 }
-<<<<<<< HEAD
-=======
-=======
-  /*
-  int i;
-  struct node* pointer = Head;
-  for (i=0; i<size; i++){
-	  if(pointer.start==addr){
-		  *((char*)(return_data)) = *((char*)(addr));
-	  }
-	  pointer = pointer->next;
-  }*/
-=======
-  memmove(return_data, addr, size);
->>>>>>> 1c96bbded24b16b40d5c1247a6d1074fa16be35d
-  Free(addr);
-}
-
->>>>>>> a17e8eb4757816e6e21fa3d8cec94b89dd1b6bf0
-
->>>>>>> 3290483d880791fb9b16bfef0a9c849dfd1dcc28

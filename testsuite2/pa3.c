@@ -10,20 +10,18 @@
 #define DSIZE       8			/* Doubleword size (bytes) */
 #define CHUNKSIZE  (1<<12)  /* Extend heap by this amount (bytes) */
 
-//define baseptr and such
+// Define baseptr and such
 typedef char *addrs_t;
 typedef void *any_t;
 
-//Part 1
+// Part 1
 
 // Linked list architecture for tracking
-
 struct node{
   // start of memory chunk
   addrs_t start;
   // end of memory chunk
   addrs_t end;
-  
   // next node in linked list
   struct node *next;
   // previous item in linked list
@@ -36,7 +34,7 @@ void init_node_types_1(struct node* n){
    n->next = NULL;
 }
 
-//(NC) node constructor for end of linked list
+// (NC) node constructor for end of linked list
 void init_node_types_2(struct node* n, addrs_t start, addrs_t end){
    n->start = start;
    n->end = end;
@@ -61,9 +59,10 @@ void Init (size_t size) {
    Head = malloc(sizeof(struct node));
    init_node_types_2(Head,baseptr, baseptr);
    TOTALSIZE = size;
-	printf("value of a = 0x%08x",baseptr);
+	printf("value of a = %08llx",(uint64_t)baseptr);
 }
 
+// Malloc
 addrs_t Malloc (size_t size) {
   struct node * pointer;
   struct node * look_ahead;
@@ -72,13 +71,13 @@ addrs_t Malloc (size_t size) {
   while(pointer!=NULL){
     look_ahead = pointer->next;
     if (look_ahead != NULL){
-		if ((uint64_t)(look_ahead->start)-(uint64_t)(pointer->end)>=size){
-			// Make a new node and set pointer.next = to it, and its pointer to look_ahead
-			struct node * new = malloc(sizeof(struct node));
-			init_node_types_3(new,pointer->end,pointer->end+size,pointer->next);
-			pointer->next = new;
-			return new->start;		
-		}
+  		if ((uint64_t)(look_ahead->start)-(uint64_t)(pointer->end)>=size){
+  			// Make a new node and set pointer.next = to it, and its pointer to look_ahead
+  			struct node * new = malloc(sizeof(struct node));
+  			init_node_types_3(new,pointer->end,pointer->end+size,pointer->next);
+  			pointer->next = new;
+  			return new->start;
+    		}
     }
     else if (TOTALSIZE+Head->end - pointer->end >=size){ // IF we reach the end of the linked list, THEN check if there is space
       struct node * new = malloc(sizeof(struct node));
@@ -92,7 +91,7 @@ addrs_t Malloc (size_t size) {
   return (NULL);
 }
 
-// free memory address
+// Free memory address
 void Free (addrs_t addr) {
   struct node* current = Head;
   while (current!=NULL){
@@ -106,16 +105,104 @@ void Free (addrs_t addr) {
   }
 }
 
+// Put
 addrs_t Put (any_t data, size_t size) {
-  /*TODO add the "data" to the position rtnval */
-  void* rtnVal = Malloc (size);
-  memmove(rtnVal,data,size);
+  addrs_t rtnVal = Malloc (size);
+  memmove(data, rtnVal, size);
   return rtnVal;
 }
 
+// Get
 void Get (any_t return_data, addrs_t addr, size_t size) {
   memmove(return_data, addr, size);
   Free(addr);
 }
 
+// Part 2
 
+// Init VHead for heap
+struct node * VHead;
+
+//init array dynamically in heap
+void heap_init(size_t size){
+  addrs_t baseptr;
+  baseptr = (addrs_t) malloc(size);
+  VHead = malloc(sizeof(struct node));
+  init_node_types_2(Head,baseptr, baseptr);
+  TOTALSIZE = size;
+  printf("value of a = %08llx",(uint64_t)baseptr);
+}
+
+// VMalloc
+addrs_t *VMalloc (size_t size){
+  struct node * VPointer;
+  struct node * VLook_ahead;
+  struct node * pointer;
+  struct node * look_ahead;
+  size = (size+(0x8-size%0x8)%0x8);
+  pointer = Head;
+  VPointer = VHead;
+  while(pointer!=NULL){
+    look_ahead = pointer->next;
+    VLook_ahead = look_ahead;
+    if (look_ahead != NULL){
+  		if ((uint64_t)(look_ahead->start)-(uint64_t)(pointer->end)>=size){
+  			// Make a new node and set pointer.next = to it, and its pointer to look_ahead
+  			struct node * new = malloc(sizeof(struct node));
+  			init_node_types_3(new,pointer->end,pointer->end+size,pointer->next);
+  			pointer->next = new;
+        //pointer to pointer
+        VPointer = pointer;
+  			return (addrs_t*) VPointer->start;
+  		}
+    }
+    else if (TOTALSIZE+Head->end - pointer->end >=size){ // IF we reach the end of the linked list, THEN check if there is space
+      struct node * new = malloc(sizeof(struct node));
+      init_node_types_2(new,pointer->end,pointer->end+size);
+      pointer->next = new;
+      //pointer to pointer
+      VPointer->next = pointer;
+      return (addrs_t*)VPointer->start;
+    }
+    pointer = look_ahead;
+    VPointer = VLook_ahead;
+  }
+  //printf("NoSpaceLeftError : no space left");
+  return (NULL);
+}
+
+// VFree
+void VFree (addrs_t *addr){
+  // frees corresponding node
+  struct node* current = Head;
+  while (current!=NULL){
+    struct node* temp = current->next;
+    if ( ((char*)(temp->start)) == ((char*)(addr)) ){
+	  current->next = current->next->next;
+	  free(temp);
+      break;
+    }
+    current = temp;
+  }
+    while(current != NULL){
+      struct node* temp = current->next;
+      if(temp != NULL){
+        memmove(current->end,temp->start,(uint64_t)temp->end-(uint64_t)temp->start);
+        temp->end = current->end+(uint64_t)temp->end-(uint64_t)temp->start;
+        temp->start = current->end;
+      }
+    }
+}
+
+// VPut
+addrs_t *VPut (any_t data, size_t size) {
+     addrs_t* rtnVal = VMalloc (size);
+     memmove(rtnVal, data, size);
+     return rtnVal;
+   }
+
+// VGet
+void VGet (any_t return_data, addrs_t *addr, size_t size) {
+    memmove(return_data, addr, size);
+    VFree(addr);
+}
