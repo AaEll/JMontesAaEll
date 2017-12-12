@@ -79,7 +79,7 @@ addrs_t Malloc (size_t size) {
   			return new->start;
     		}
     }
-    else if (TOTALSIZE+Head->end - pointer->end >=size){ // IF we reach the end of the linked list, THEN check if there is space
+    else if (TOTALSIZE+Head->end - pointer->end >size){ // IF we reach the end of the linked list, THEN check if there is space
       struct node * new = malloc(sizeof(struct node));
       init_node_types_2(new,pointer->end,pointer->end+size);
       pointer->next = new;
@@ -108,7 +108,7 @@ void Free (addrs_t addr) {
 // Put
 addrs_t Put (any_t data, size_t size) {
   addrs_t rtnVal = Malloc (size);
-  memmove(data, rtnVal, size);
+  memmove( rtnVal,data, size);
   return rtnVal;
 }
 

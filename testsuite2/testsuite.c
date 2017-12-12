@@ -70,13 +70,11 @@ int test_stability(int numIterations, unsigned long* tot_alloc_time, unsigned lo
   *tot_free_time = 0;
 
   for (i = 0; i < numIterations; i++) {
-    n = sprintf (s, "String 1, the current count is %d\n", i);
     rdtsc(&start);
     addr1 = PUT(s, n+1);
     rdtsc(&finish);
     *tot_alloc_time += finish - start;
     addr2 = PUT(s, n+1);
-	printf("value of a = %8s",addr2);
     // Check for heap overflow
     if (!addr1 || !addr2){
       res |= ERROR_OUT_OF_MEM;
