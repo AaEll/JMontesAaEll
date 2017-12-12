@@ -87,7 +87,7 @@ addrs_t Malloc (size_t size) {
     }
     pointer = look_ahead;
   }
-  printf("NoSpaceLeftError : no space left");
+  //printf("NoSpaceLeftError : no space left");
   return (NULL);
 }
 
@@ -108,7 +108,9 @@ void Free (addrs_t addr) {
 // Put
 addrs_t Put (any_t data, size_t size) {
   addrs_t rtnVal = Malloc (size);
-  memmove(rtnVal,data , size);
+  if (rtnVal!=NULL){
+	memmove( rtnVal,data, size);
+  }
   return rtnVal;
 }
 
