@@ -14,6 +14,10 @@
 typedef char *addrs_t;
 typedef void *any_t;
 
+// counting variables for heap Check
+int count_malloc;
+int count_free;
+
 // Part 1
 
 // Linked list architecture for tracking
@@ -118,4 +122,20 @@ addrs_t Put (any_t data, size_t size) {
 void Get (any_t return_data, addrs_t addr, size_t size) {
   memmove(return_data, addr, size);
   Free(addr);
+  count_get += 1;
+}
+
+// Heap Checker
+int main(){
+  Init(80);
+  int size = 100;
+  char data[80];
+  int num_trials = 1000000;
+  int counter;
+  for(counter = 0; counter < num_trials; counter++ ){
+    Put(TOTALSIZE);
+    Get(Malloc(TOTALSIZE));
+  }
+  printf("Num of Malloc calls for Put run with trial size n = 1,000,000 = %d\n",count_malloc);
+  printf("Num of Free calls for Get with trial size n = 1,000,000 = %d\n",count_free);
 }
