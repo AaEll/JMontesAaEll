@@ -15,6 +15,10 @@
 typedef char *addrs_t;
 typedef void *any_t;
 
+// Counting variables for heap Check
+int count_Vmalloc;
+int count_Vfree;
+
 // Doubly-Linked list architecture for tracking
 struct node{
   // start of memory chunk
@@ -63,6 +67,7 @@ void heap_init(size_t size){
 
 // VMalloc
 addrs_t *VMalloc (size_t size){
+  count_Vmalloc += 1;
   struct node * pointer;
   struct node * look_ahead;
   size = (size+(0x8-size%0x8)%0x8);
@@ -96,6 +101,7 @@ addrs_t *VMalloc (size_t size){
 
 // VFree
 void VFree (addrs_t *addr){
+  count_Vfree += 1;
   // frees corresponding node
   struct node* current = Head;
   while (current!=NULL){
@@ -130,4 +136,18 @@ addrs_t *VPut (any_t data, size_t size) {
 void VGet (any_t return_data, addrs_t *addr, size_t size) {
     memmove(return_data, addr, size);
     VFree(addr);
+}
+
+// Heap Checker
+int main(){
+  Init(80);
+  char data[80];
+  int num_trials = 1000000;
+  int counter;
+  for(counter = 0; counter < num_trials; counter++ ){
+    VPut(TOTALSIZE);
+    VGet(VMalloc(TOTALSIZE));
+  }
+  printf("Num of VMalloc calls for VPut run with trial size n = 1,000,000 = %d\n",count_Vmalloc);
+  printf("Num of VFree calls for VGet run with trial size n = 1,000,000 = %d\n",count_Vfree);
 }
