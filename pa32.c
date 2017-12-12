@@ -15,8 +15,41 @@
 typedef char *addrs_t;
 typedef void *any_t;
 
+// Doubly-Linked list architecture for tracking
+struct node{
+  // start of memory chunk
+  addrs_t start;
+  // end of memory chunk
+  addrs_t end;
+  // next node in linked list
+  struct node *next;
+  // previous item in linked list
+  struct node *prev;
+};
+
+// (NC) node null constructor
+void init_node_types_1(struct node* n){
+   n->start = NULL;
+   n->end = NULL;
+   n->next = NULL;
+}
+
+// (NC) node constructor for end of linked list
+void init_node_types_2(struct node* n, addrs_t start, addrs_t end){
+   n->start = start;
+   n->end = end;
+   n->next = NULL;
+}
+
+// (NC) node constructor for middle of linked list
+void init_node_types_3(struct node* n, addrs_t start, addrs_t end, struct node* nextNode){
+   n->start = start;
+   n->end = end;
+   n->next = nextNode;
+}
+
 // Init VHead for heap
-struct node * VHead;
+struct node * Head;
 
 //init array dynamically in heap
 void heap_init(size_t size){
@@ -30,13 +63,10 @@ void heap_init(size_t size){
 
 // VMalloc
 addrs_t *VMalloc (size_t size){
-  struct node * VPointer;
-  struct node * VLook_ahead;
   struct node * pointer;
   struct node * look_ahead;
   size = (size+(0x8-size%0x8)%0x8);
   pointer = Head;
-  VPointer = VHead;
   while(pointer!=NULL){
     look_ahead = pointer->next;
     VLook_ahead = look_ahead;
@@ -47,8 +77,7 @@ addrs_t *VMalloc (size_t size){
   			init_node_types_3(new,pointer->end,pointer->end+size,pointer->next);
   			pointer->next = new;
         //pointer to pointer
-        VPointer = pointer;
-  			return (addrs_t*) VPointer->start;
+  			return pointer->start;
   		}
     }
     else if (TOTALSIZE+Head->end - pointer->end >=size){ // IF we reach the end of the linked list, THEN check if there is space
@@ -59,8 +88,7 @@ addrs_t *VMalloc (size_t size){
       VPointer->next = pointer;
       return (addrs_t*)VPointer->start;
     }
-    pointer = look_ahead;
-    VPointer = VLook_ahead;
+    pointer = look_ahead->start;
   }
   //printf("NoSpaceLeftError : no space left");
   return (NULL);
@@ -92,7 +120,9 @@ void VFree (addrs_t *addr){
 // VPut
 addrs_t *VPut (any_t data, size_t size) {
      addrs_t* rtnVal = VMalloc (size);
-     memmove(rtnVal, data, size);
+     if (rtnVal!=NULL){
+   	   memmove( rtnVal,data, size);
+     }
      return rtnVal;
    }
 
