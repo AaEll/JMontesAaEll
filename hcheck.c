@@ -1,3 +1,25 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+#include <unistd.h>
+
+
+#define KBLU  "\x1B[34m"
+#define KRED  "\x1B[31m"
+#define KRESET "\x1B[0m"
+
+#define ERROR_OUT_OF_MEM    0x1
+#define ERROR_DATA_INCON    0x2
+#define ERROR_ALIGMENT      0x4
+#define ERROR_NOT_FF        0x8
+
+#define ALIGN 8
+
+#define rdtsc(x)      __asm__ __volatile__("rdtsc \n\t" : "=A" (*(x)))
+
+#include "pa31.c" // Inject student's code
+
 // Heap Checker
 /*
 Number of allocated blocks : XXXX

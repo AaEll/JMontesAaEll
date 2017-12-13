@@ -1,5 +1,5 @@
-Authors: Aaron Elliot, Justin Montes
-pa32
+//Authors: Aaron Elliot, Justin Montes
+//pa32
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -258,8 +258,8 @@ int main (int argc, char **argv) {
   printf("Padded total number of bytes allocated: %d\n",padded_bytes);
   printf("Raw total number of bytes free: %d\n",(padded_bytes-raw_bytes));
   printf("Aligned total number of bytes free: %d\n",(padded_bytes-raw_bytes)*8);
-  printf("Total number of Malloc requests :%d\n", count_malloc);
-  printf("Total number of Free requests :%d\n", count_free);
+  printf("Total number of Malloc requests :%d\n", count_Vmalloc);
+  printf("Total number of Free requests :%d\n", count_Vfree);
   printf("Total number of request failures: %d\n",num_failures);
   printf("Average clock cycles for a Malloc request: :%lu\n",tot_alloc_time/numIterations);
   printf("Average clock cycles for a Free request: :%lu\n", tot_free_time/numIterations);
