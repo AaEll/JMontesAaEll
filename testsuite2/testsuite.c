@@ -139,7 +139,7 @@ int test_maxNumOfAlloc(){
   int count = 0;
   char *d = "x";
   printf("FF\n");
-  const int testCap = 100000;
+  const int testCap = 1000000-1;
   ADDRS allocs[testCap];
   printf("FF\n");
   printf("FF\n");

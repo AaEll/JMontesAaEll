@@ -1,6 +1,3 @@
-// Authors: Justin Montes Aaron Elliot
-//pa3
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,6 +22,7 @@ struct node{
   // next node in linked list
   struct node *next;
   // previous item in linked list
+  
 };
 
 // (NC) node null constructor
@@ -61,7 +59,16 @@ void Init (size_t size) {
    TOTALSIZE = size;
 }
 
-// Malloc
+//init array dynamically in heap
+void heap_init(size_t size){
+  addrs_t baseptr;
+  baseptr = (addrs_t) malloc(size);
+  VHead = malloc(sizeof(struct node));
+  init_node_types_2(Head,baseptr, baseptr);
+  TOTALSIZE = size;
+}
+
+// VMalloc
 addrs_t Malloc (size_t size) {
   struct node * pointer;
   struct node * look_ahead;
@@ -90,32 +97,39 @@ addrs_t Malloc (size_t size) {
   return (NULL);
 }
 
-// Free memory address
-void Free (addrs_t addr) {
+
+// VFree
+void VFree (addrs_t *addr){
+  // frees corresponding node
   struct node* current = Head;
   while (current!=NULL){
     struct node* temp = current->next;
-		if (((char*)(temp->start)) == ((char*)(addr)) ){
-		  current->next = current->next->next;
-		  free(temp);
-		  break;
-		}
+    if ( ((char*)(temp->start)) == ((char*)(addr)) ){
+	  current->next = current->next->next;
+	  free(temp);
+      break;
+    }
     current = temp;
   }
+    while(current != NULL){
+      struct node* temp = current->next;
+      if(temp != NULL){
+        memmove(current->end,temp->start,(uint64_t)temp->end-(uint64_t)temp->start);
+        temp->end = current->end+(uint64_t)temp->end-(uint64_t)temp->start;
+        temp->start = current->end;
+      }
+    }
 }
 
-// Put
-addrs_t Put (any_t data, size_t size) {
-  addrs_t rtnVal = Malloc (size);
-  if (rtnVal!=NULL){
-    memmove(rtnVal,data, size);
-  }
-  return rtnVal;
-}
+// VPut
+addrs_t *VPut (any_t data, size_t size) {
+     addrs_t* rtnVal = VMalloc (size);
+     memmove(rtnVal, data, size);
+     return rtnVal;
+   }
 
-// Get
-void Get (any_t return_data, addrs_t addr, size_t size) {
-  memmove(return_data, addr, size);
-  Free(addr);
+// VGet
+void VGet (any_t return_data, addrs_t *addr, size_t size) {
+    memmove(return_data, addr, size);
+    VFree(addr);
 }
-
