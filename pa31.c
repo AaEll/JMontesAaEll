@@ -14,10 +14,6 @@
 typedef char *addrs_t;
 typedef void *any_t;
 
-// counting variables for heap Check
-int count_malloc;
-int count_free;
-
 // Part 1
 
 // Linked list architecture for tracking
@@ -63,7 +59,6 @@ void Init (size_t size) {
    Head = malloc(sizeof(struct node));
    init_node_types_2(Head,baseptr, baseptr);
    TOTALSIZE = size;
-	printf("value of a = %08llx",(uint64_t)baseptr);
 }
 
 // Malloc
@@ -83,7 +78,7 @@ addrs_t Malloc (size_t size) {
   			return new->start;
     		}
     }
-    else if (TOTALSIZE+Head->end - pointer->end >size){ // IF we reach the end of the linked list, THEN check if there is space
+    else if (TOTALSIZE+Head->end - pointer->end >=size){ // IF we reach the end of the linked list, THEN check if there is space
       struct node * new = malloc(sizeof(struct node));
       init_node_types_2(new,pointer->end,pointer->end+size);
       pointer->next = new;
@@ -91,21 +86,22 @@ addrs_t Malloc (size_t size) {
     }
     pointer = look_ahead;
   }
-  //printf("NoSpaceLeftError : no space left");
+  printf("NoSpaceLeftError : no space left\n");
   return (NULL);
 }
 
 // Free memory address
 void Free (addrs_t addr) {
   struct node* current = Head;
-  while (current!=NULL){
-    struct node* temp = current->next;
-		if (((char*)(temp->start)) == ((char*)(addr)) ){
-		  current->next = current->next->next;
-		  free(temp);
-		  break;
-		}
+  struct node* temp = current->next;
+  while (temp!=NULL){
+	if (((char*)(temp->start)) == ((char*)(addr)) ){
+	  current->next = temp->next;
+	  free(temp);
+	  break;
+	}
     current = temp;
+	temp = current->next;
   }
 }
 
@@ -113,7 +109,7 @@ void Free (addrs_t addr) {
 addrs_t Put (any_t data, size_t size) {
   addrs_t rtnVal = Malloc (size);
   if (rtnVal!=NULL){
-	   memmove( rtnVal,data, size);
+    memmove(rtnVal,data, size);
   }
   return rtnVal;
 }
@@ -122,7 +118,6 @@ addrs_t Put (any_t data, size_t size) {
 void Get (any_t return_data, addrs_t addr, size_t size) {
   memmove(return_data, addr, size);
   Free(addr);
-  count_get += 1;
 }
 
 // Heap Checker
