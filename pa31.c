@@ -32,7 +32,10 @@ typedef void *any_t;
 
 // Counters for heapcheck
 int count_free = 0;
-int count_malloc = -1;
+int count_malloc = 0;
+int raw_bytes = 0;
+int padded_bytes = 0;
+int num_failures = 0;
 
 // Part 1
 
@@ -91,14 +94,21 @@ addrs_t Malloc (size_t size) {
     look_ahead = pointer->next;
     if (look_ahead != NULL){
   		if ((uint64_t)(look_ahead->start)-(uint64_t)(pointer->end)>=size){
+        // heapcheck values
+        raw_bytes += (uint64_t)(look_ahead->start)-(uint64_t)(pointer->end);
+        padded_bytes += size;
+        count_malloc++;
   			// Make a new node and set pointer.next = to it, and its pointer to look_ahead
   			struct node * new = malloc(sizeof(struct node));
   			init_node_types_3(new,pointer->end,pointer->end+size,pointer->next);
   			pointer->next = new;
   			return new->start;
     		}
-    }
+//    }
     else if (TOTALSIZE+Head->end - pointer->end >=size){ // IF we reach the end of the linked list, THEN check if there is space
+      count_malloc++;
+      raw_bytes += (uint64_t)(look_ahead->start)-(uint64_t)(pointer->end);
+      padded_bytes += size;
       struct node * new = malloc(sizeof(struct node));
       init_node_types_2(new,pointer->end,pointer->end+size);
       pointer->next = new;
@@ -106,7 +116,9 @@ addrs_t Malloc (size_t size) {
     }
     pointer = look_ahead;
   }
+}
   printf("NoSpaceLeftError : no space left\n");
+  num_failures += 1;
   return (NULL);
 }
 
@@ -116,11 +128,13 @@ void Free (addrs_t addr) {
   struct node* temp = current->next;
   while (temp!=NULL){
 	if (((char*)(temp->start)) == ((char*)(addr)) ){
+    count_free++;
 	  current->next = temp->next;
 	  free(temp);
 	  break;
 	}
-    current = temp;
+  num_failures += 1;
+  current = temp;
 	temp = current->next;
   }
 }
@@ -179,18 +193,38 @@ Total clock cycles for all requests: XXXX
   #define DATA_OF(addr)         (*(addr))
 #endif
 
+unsigned long tot_alloc_time, tot_free_time;
+int numIterations = 1000000;
+
 void print_testResult(int code){
   if (code){
-    printf("[%sFailed%s] due to: ",KRED,KRESET);
-    if (code & ERROR_OUT_OF_MEM)
-      printf("<OUT_OF_MEM>");
-    if (code & ERROR_DATA_INCON)
-      printf("<DATA_INCONSISTENCY>");
-    if (code & ERROR_ALIGMENT)
-      printf("<ALIGMENT>");
+    printf("Number of allocated blocks: %d\n",count_malloc);
+    printf("Number of free blocks: %d\n",count_free);
+    printf("Raw total number of bytes allocated:  %d\n",raw_bytes);
+    printf("Padded total number of bytes allocated: %d\n",padded_bytes);
+    printf("Raw total number of bytes free: %d\n",(padded_bytes-raw_bytes));
+    printf("Aligned total number of bytes free: %d\n",(padded_bytes-raw_bytes)*8);
+    printf("Total number of Malloc requests :%d\n", count_malloc);
+    printf("Total number of Free requests :%d\n", count_free);
+    printf("Total number of request failures: %d\n",num_failures);
+    printf("Average clock cycles for a Malloc request: :%lu\n",tot_alloc_time/numIterations);
+    printf("Average clock cycles for a Free request: :%lu\n", tot_free_time/numIterations);
+    printf("Total clock cycles for all requests: %lu\n",(tot_alloc_time+tot_free_time)/numIterations);
     printf("\n");
   }else{
-    printf("[%sPassed%s]\n",KBLU, KRESET);
+    printf("hey");
+    printf("Number of allocated blocks: %d\n",count_malloc);
+    printf("Number of free blocks: %d\n",count_free);
+    printf("Raw total number of bytes allocated:  %d\n",raw_bytes);
+    printf("Padded total number of bytes allocated: %d\n",padded_bytes);
+    printf("Raw total number of bytes free: %d\n",(padded_bytes-raw_bytes));
+    printf("Aligned total number of bytes free: %d\n",(padded_bytes-raw_bytes)*8);
+    printf("Total number of Malloc requests :%d\n", count_malloc);
+    printf("Total number of Free requests :%d\n", count_free);
+    printf("Total number of request failures: %d\n",num_failures);
+    printf("Average clock cycles for a Malloc request: :%lu\n",tot_alloc_time/numIterations);
+    printf("Average clock cycles for a Free request: :%lu\n", tot_free_time/numIterations);
+    printf("Total clock cycles for all requests: %lu\n",(tot_alloc_time+tot_free_time)/numIterations);;
   }
 }
 
@@ -234,76 +268,6 @@ int test_stability(int numIterations, unsigned long* tot_alloc_time, unsigned lo
   return res;
 }
 
-int test_ff(){
-  int err = 0;
-  // Round 1 - 2 consequtive allocations should be allocated after one another
-  ADDRS v1;
-  ADDRS v2;
-  ADDRS v3;
-  ADDRS v4;
-  v1 = MALLOC(8);
-  v2 = MALLOC(4);
-  if (LOCATION_OF(v1) >= LOCATION_OF(v2))
-    err |= ERROR_NOT_FF;
-  if ((LOCATION_OF(v1) & (ALIGN-1)) || (LOCATION_OF(v2) & (ALIGN-1)))
-    err |= ERROR_ALIGMENT;
-  // Round 2 - New allocation should be placed in a free block at top if fits
-  FREE(v1,8);
-  v3 = MALLOC(64);
-  v4 = MALLOC(5);
-  if (LOCATION_OF(v4) != LOCATION_OF(v1) || LOCATION_OF(v3) < LOCATION_OF(v2))
-    err |= ERROR_NOT_FF;
-  if ((LOCATION_OF(v3) & (ALIGN-1)) || (LOCATION_OF(v4) & (ALIGN-1)))
-    err |= ERROR_ALIGMENT;
-  // Round 3 - Correct merge
-  FREE(v4,5);
-  FREE(v2,4);
-  v4 = MALLOC(10);
-  if (LOCATION_OF(v4) != LOCATION_OF(v1))
-    err |= ERROR_NOT_FF;
-  // Round 4 - Correct Merge 2
-  FREE(v4,10);
-  FREE(v3,64);
-  v4 = MALLOC(256);
-  if (LOCATION_OF(v4) != LOCATION_OF(v1))
-    err |= ERROR_NOT_FF;
-  // Clean-up
-  FREE(v4,256);
-  return err;
-}
-
-int test_maxNumOfAlloc(){
-  int count = 0;
-  char *d = "x";
-  printf("FF\n");
-  const int testCap = 1000000-1;
-  ADDRS allocs[testCap];
-  printf("FF\n");
-  printf("FF\n");
-
-
-  while ((allocs[count]=PUT(d,1)) && count < testCap){
-    if (DATA_OF(allocs[count])!='x') break;
-    count++;
-  }
-  // Clean-up
-  int i;
-  for (i = 0 ; i < count ; i++)
-    FREE(allocs[i],1);
-  return count;
-}
-
-int test_maxSizeOfAlloc(int size){
-  char* d = "x";
-  if (!size) return 0;
-  ADDRS v1 = MALLOC(size);
-  if (v1){
-    return size + test_maxSizeOfAlloc(size>>1);
-  }else{
-    return test_maxSizeOfAlloc(size>>1);
-  }
-}
-
 int main (int argc, char **argv) {
   int res;
   unsigned mem_size = (1<<20); // Default
@@ -317,33 +281,9 @@ int main (int argc, char **argv) {
 
   printf("Evaluating a %s of %d KBs...\n",TESTSUITE_STR,mem_size/1024);
 
-  unsigned long tot_alloc_time, tot_free_time;
-  int numIterations = 1000000;
   // Initialize the heap
   INIT(mem_size);
-  // Test 1
-  printf("Number of allocated blocks: \t");
   print_testResult(test_stability(numIterations,&tot_alloc_time,&tot_free_time));
-  printf("\tNumber of free blocks: %lu\n",tot_alloc_time/numIterations);
-  printf("\tRaw total number of bytes allocated:  %lu\n",tot_free_time/numIterations);
-  printf("\tPadded total number of bytes allocated: %lu\n",numIterations/tot_alloc_time+tot_free_time);
-  // Test 2
-  #ifndef VHEAP
-  printf("Raw total number of bytes free: \t\t");
-  print_testResult(test_ff());
-  #endif
-  printf("Raw total number of bytes free: \t\t");
-  // Test 3:
-  printf("Aligned total number of bytes free:\t");
-  printf("[%s%i%s]\n",KBLU,test_maxNumOfAlloc(), KRESET);
-  // Test 4:
-  printf("Total number of Malloc requests :\t\t");
-  printf("[%s%i KB%s]\n", KBLU, test_maxSizeOfAlloc(4*1024*1024)>>10, KRESET);
-  printf("Total number of Free requests :\t\t");
-  printf("Total number of request failures: \t\t");
-  printf("Average clock cycles for a Malloc request: \t\t");
-  printf("Average clock cycles for a Free request: \t\t");
-  printf("Total clock cycles for all requests: \t\t");
 
   return 0;
 }
