@@ -94,31 +94,30 @@ addrs_t Malloc (size_t size) {
     look_ahead = pointer->next;
     if (look_ahead != NULL){
   		if ((uint64_t)(look_ahead->start)-(uint64_t)(pointer->end)>=size){
-        // heapcheck values
-        raw_bytes += (uint64_t)(look_ahead->start)-(uint64_t)(pointer->end);
-        padded_bytes += size;
-        count_malloc++;
   			// Make a new node and set pointer.next = to it, and its pointer to look_ahead
   			struct node * new = malloc(sizeof(struct node));
-  			init_node_types_3(new,pointer->end,pointer->end+size,pointer->next);
+  			//init_node_types_3(new,pointer->end,pointer->end+size,pointer->next);
   			pointer->next = new;
+        count_malloc++;
+        padded_bytes += size;
+        raw_bytes += (uint64_t)(new->start)-(uint64_t)(new->end);
   			return new->start;
     		}
-}
-else if (TOTALSIZE+Head->end - pointer->end >=size){ // IF we reach the end of the linked list, THEN check if there is space
-  count_malloc++;
-  raw_bytes += (uint64_t)(look_ahead->start)-(uint64_t)(pointer->end);
-  padded_bytes += size;
-  struct node * new = malloc(sizeof(struct node));
-  init_node_types_2(new,pointer->end,pointer->end+size);
-  pointer->next = new;
-  return new->start;
-}
-pointer = look_ahead;
-}
-printf("NoSpaceLeftError : no space left\n");
-num_failures++;
-return (NULL);
+    }
+    else if (TOTALSIZE+Head->end - pointer->end >=size){ // IF we reach the end of the linked list, THEN check if there is space
+      struct node * new = malloc(sizeof(struct node));
+      init_node_types_2(new,pointer->end,pointer->end+size);
+      pointer->next = new;
+      count_malloc++;
+      padded_bytes += size;
+      raw_bytes += (uint64_t)(new->start)-(uint64_t)(new->end);
+      return new->start;
+    }
+    pointer = look_ahead;
+  }
+  printf("NoSpaceLeftError : no space left\n");
+  num_failures++;
+  return (NULL);
 }
 
 // Free memory address
@@ -135,6 +134,7 @@ void Free (addrs_t addr) {
   current = temp;
 	temp = current->next;
   }
+  num_failures++;
 }
 
 // Put
