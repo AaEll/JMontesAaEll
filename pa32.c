@@ -133,6 +133,7 @@ void VFree (addrs_t *addr) {
 	current = temp;
 	temp = current->next;
   }
+  num_failures++;
 }
 // VPut
 addrs_t* VPut (any_t data, size_t size) {
