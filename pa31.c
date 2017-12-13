@@ -104,22 +104,23 @@ addrs_t Malloc (size_t size) {
   			pointer->next = new;
   			return new->start;
     		}
-//    }
-    else if (TOTALSIZE+Head->end - pointer->end >=size){ // IF we reach the end of the linked list, THEN check if there is space
-      count_malloc++;
-      raw_bytes += (uint64_t)(look_ahead->start)-(uint64_t)(pointer->end);
-      padded_bytes += size;
-      struct node * new = malloc(sizeof(struct node));
-      init_node_types_2(new,pointer->end,pointer->end+size);
-      pointer->next = new;
-      return new->start;
-    }
-    pointer = look_ahead;
-  }
-}
   printf("NoSpaceLeftError : no space left\n");
   num_failures += 1;
   return (NULL);
+}
+else if (TOTALSIZE+Head->end - pointer->end >=size){ // IF we reach the end of the linked list, THEN check if there is space
+  count_malloc++;
+  raw_bytes += (uint64_t)(look_ahead->start)-(uint64_t)(pointer->end);
+  padded_bytes += size;
+  struct node * new = malloc(sizeof(struct node));
+  init_node_types_2(new,pointer->end,pointer->end+size);
+  pointer->next = new;
+  return new->start;
+}
+pointer = look_ahead;
+}
+printf("NoSpaceLeftError : no space left\n");
+return (NULL);
 }
 
 // Free memory address
