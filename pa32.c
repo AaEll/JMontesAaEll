@@ -190,41 +190,6 @@ Total clock cycles for all requests: XXXX
   #define DATA_OF(addr)         (*(addr))
 #endif
 
-unsigned long tot_alloc_time, tot_free_time;
-int numIterations = 1000000;
-
-void print_testResult(int code){
-  if (code){
-    printf("Number of allocated blocks: %d\n",count_Vmalloc);
-    printf("Number of free blocks: %d\n",count_Vfree);
-    printf("Raw total number of bytes allocated:  %d\n",raw_bytes);
-    printf("Padded total number of bytes allocated: %d\n",padded_bytes);
-    printf("Raw total number of bytes free: %d\n",(padded_bytes-raw_bytes));
-    printf("Aligned total number of bytes free: %d\n",(padded_bytes-raw_bytes)*8);
-    printf("Total number of Malloc requests :%d\n", count_malloc);
-    printf("Total number of Free requests :%d\n", count_free);
-    printf("Total number of request failures: %d\n",num_failures);
-    printf("Average clock cycles for a Malloc request: :%lu\n",tot_alloc_time/numIterations);
-    printf("Average clock cycles for a Free request: :%lu\n", tot_free_time/numIterations);
-    printf("Total clock cycles for all requests: %lu\n",(tot_alloc_time+tot_free_time)/numIterations);
-    printf("\n");
-  }else{
-    printf("hey");
-    printf("Number of allocated blocks: %d\n",count_Vmalloc);
-    printf("Number of free blocks: %d\n",count_Vfree);
-    printf("Raw total number of bytes allocated:  %d\n",raw_bytes);
-    printf("Padded total number of bytes allocated: %d\n",padded_bytes);
-    printf("Raw total number of bytes free: %d\n",(padded_bytes-raw_bytes));
-    printf("Aligned total number of bytes free: %d\n",(padded_bytes-raw_bytes)*8);
-    printf("Total number of Malloc requests :%d\n", count_malloc);
-    printf("Total number of Free requests :%d\n", count_free);
-    printf("Total number of request failures: %d\n",num_failures);
-    printf("Average clock cycles for a Malloc request: :%lu\n",tot_alloc_time/numIterations);
-    printf("Average clock cycles for a Free request: :%lu\n", tot_free_time/numIterations);
-    printf("Total clock cycles for all requests: %lu\n",(tot_alloc_time+tot_free_time)/numIterations);;
-  }
-}
-
 int test_stability(int numIterations, unsigned long* tot_alloc_time, unsigned long* tot_free_time){
   int i, n, res = 0;
   char s[80];
@@ -268,6 +233,9 @@ int test_stability(int numIterations, unsigned long* tot_alloc_time, unsigned lo
 //main
 int main (int argc, char **argv) {
   int res;
+  unsigned long tot_alloc_time, tot_free_time;
+  int numIterations = 1000000;
+
   unsigned mem_size = (1<<20); // Default
   // Parse the arguments
   if (argc > 2){
@@ -277,11 +245,26 @@ int main (int argc, char **argv) {
     mem_size = atoi(argv[1]);
   }
 
-  printf("Evaluating a %s of %d KBs...\n",TESTSUITE_STR,mem_size/1024);
-
   // Initialize the heap
   INIT(mem_size);
-  print_testResult(test_stability(numIterations,&tot_alloc_time,&tot_free_time));
+
+  printf("Evaluating a %s of %d KBs...\n",TESTSUITE_STR,mem_size/1024);
+
+  test_stability(numIterations,&tot_alloc_time,&tot_free_time);
+
+  printf("Number of allocated blocks: %d\n",count_Vmalloc);
+  printf("Number of free blocks: %d\n",count_Vfree);
+  printf("Raw total number of bytes allocated:  %d\n",raw_bytes);
+  printf("Padded total number of bytes allocated: %d\n",padded_bytes);
+  printf("Raw total number of bytes free: %d\n",(padded_bytes-raw_bytes));
+  printf("Aligned total number of bytes free: %d\n",(padded_bytes-raw_bytes)*8);
+  printf("Total number of Malloc requests :%d\n", count_malloc);
+  printf("Total number of Free requests :%d\n", count_free);
+  printf("Total number of request failures: %d\n",num_failures);
+  printf("Average clock cycles for a Malloc request: :%lu\n",tot_alloc_time/numIterations);
+  printf("Average clock cycles for a Free request: :%lu\n", tot_free_time/numIterations);
+  printf("Total clock cycles for all requests: %lu\n",(tot_alloc_time+tot_free_time)/numIterations);
+  printf("\n");
 
   return 0;
 }
