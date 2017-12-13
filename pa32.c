@@ -95,7 +95,7 @@ addrs_t * VMalloc (size_t size) {
     count_Vmalloc+= 1;
     raw_bytes += size;
     struct node * new = malloc(sizeof(struct node));
-    padded_bytes +=((uint64_t)(new->start)-(uint64_t)(new->end))*(-1);
+    padded_bytes +=((uint64_t)(new->start)-(uint64_t)(new->end));
     init_node_types_2(new,Tail->end,Tail->end+size);
     Tail->next = new;
 	Tail = new;
@@ -262,7 +262,7 @@ int main (int argc, char **argv) {
   printf("Total number of request failures: %d\n",num_failures);
   printf("Average clock cycles for a Malloc request: :%lu\n",tot_alloc_time/numIterations);
   printf("Average clock cycles for a Free request: :%lu\n", tot_free_time/numIterations);
-  printf("Total clock cycles for all requests: %lu\n",(tot_alloc_time+tot_free_time)/numIterations);
+  printf("Total clock cycles for all requests: %lu\n",(tot_alloc_time+tot_free_time));
   printf("\n");
 
   return 0;

@@ -104,9 +104,6 @@ addrs_t Malloc (size_t size) {
   			pointer->next = new;
   			return new->start;
     		}
-  printf("NoSpaceLeftError : no space left\n");
-  num_failures += 1;
-  return (NULL);
 }
 else if (TOTALSIZE+Head->end - pointer->end >=size){ // IF we reach the end of the linked list, THEN check if there is space
   count_malloc++;
@@ -120,6 +117,7 @@ else if (TOTALSIZE+Head->end - pointer->end >=size){ // IF we reach the end of t
 pointer = look_ahead;
 }
 printf("NoSpaceLeftError : no space left\n");
+num_failures++;
 return (NULL);
 }
 
@@ -261,12 +259,12 @@ int main (int argc, char **argv) {
   printf("Padded total number of bytes allocated: %d\n",padded_bytes);
   printf("Raw total number of bytes free: %d\n",(raw_bytes-padded_bytes));
   printf("Aligned total number of bytes free: %d\n",(raw_bytes-padded_bytes)*8);
-  printf("Total number of Malloc requests :%d\n", count_Vmalloc);
-  printf("Total number of Free requests :%d\n", count_Vfree);
+  printf("Total number of Malloc requests :%d\n", count_malloc);
+  printf("Total number of Free requests :%d\n", count_free);
   printf("Total number of request failures: %d\n",num_failures);
   printf("Average clock cycles for a Malloc request: :%lu\n",tot_alloc_time/numIterations);
   printf("Average clock cycles for a Free request: :%lu\n", tot_free_time/numIterations);
-  printf("Total clock cycles for all requests: %lu\n",(tot_alloc_time+tot_free_time)/numIterations);
+  printf("Total clock cycles for all requests: %lu\n",(tot_alloc_time+tot_free_time));
   printf("\n");
 
   return 0;
