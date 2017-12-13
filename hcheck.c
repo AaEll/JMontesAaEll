@@ -18,7 +18,8 @@
 
 #define rdtsc(x)      __asm__ __volatile__("rdtsc \n\t" : "=A" (*(x)))
 
-#include "pa31.c" // Inject student's code
+#include "pa31.c"   //part1
+//#include "pa32.c" //part2
 
 // Heap Checker
 /*
