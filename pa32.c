@@ -95,7 +95,7 @@ addrs_t * VMalloc (size_t size) {
     count_Vmalloc+= 1;
     raw_bytes += size;
     struct node * new = malloc(sizeof(struct node));
-    padded_bytes +=((uint64_t)(new->start)-(uint64_t)(new->end));
+    padded_bytes +=((uint64_t)(new->start)-(uint64_t)(new->end))*(-1);
     init_node_types_2(new,Tail->end,Tail->end+size);
     Tail->next = new;
 	Tail = new;
@@ -133,7 +133,6 @@ void VFree (addrs_t *addr) {
 	current = temp;
 	temp = current->next;
   }
-  num_failures += 1;
 }
 // VPut
 addrs_t* VPut (any_t data, size_t size) {
@@ -256,8 +255,8 @@ int main (int argc, char **argv) {
   printf("Number of free blocks: %d\n",count_Vfree);
   printf("Raw total number of bytes allocated:  %d\n",raw_bytes);
   printf("Padded total number of bytes allocated: %d\n",padded_bytes);
-  printf("Raw total number of bytes free: %d\n",(padded_bytes-raw_bytes));
-  printf("Aligned total number of bytes free: %d\n",(padded_bytes-raw_bytes)*8);
+  printf("Raw total number of bytes free: %d\n",(raw_bytes-padded_bytes));
+  printf("Aligned total number of bytes free: %d\n",(raw_bytes-padded_bytes)*8);
   printf("Total number of Malloc requests :%d\n", count_Vmalloc);
   printf("Total number of Free requests :%d\n", count_Vfree);
   printf("Total number of request failures: %d\n",num_failures);

@@ -134,7 +134,6 @@ void Free (addrs_t addr) {
 	  free(temp);
 	  break;
 	}
-  num_failures += 1;
   current = temp;
 	temp = current->next;
   }
@@ -260,10 +259,10 @@ int main (int argc, char **argv) {
   printf("Number of free blocks: %d\n",count_free);
   printf("Raw total number of bytes allocated:  %d\n",raw_bytes);
   printf("Padded total number of bytes allocated: %d\n",padded_bytes);
-  printf("Raw total number of bytes free: %d\n",(padded_bytes-raw_bytes));
-  printf("Aligned total number of bytes free: %d\n",(padded_bytes-raw_bytes)*8);
-  printf("Total number of Malloc requests :%d\n", count_malloc);
-  printf("Total number of Free requests :%d\n", count_free);
+  printf("Raw total number of bytes free: %d\n",(raw_bytes-padded_bytes));
+  printf("Aligned total number of bytes free: %d\n",(raw_bytes-padded_bytes)*8);
+  printf("Total number of Malloc requests :%d\n", count_Vmalloc);
+  printf("Total number of Free requests :%d\n", count_Vfree);
   printf("Total number of request failures: %d\n",num_failures);
   printf("Average clock cycles for a Malloc request: :%lu\n",tot_alloc_time/numIterations);
   printf("Average clock cycles for a Free request: :%lu\n", tot_free_time/numIterations);
