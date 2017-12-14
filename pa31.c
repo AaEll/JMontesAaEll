@@ -36,6 +36,8 @@ int count_malloc = 0;
 int raw_bytes = 0;
 int padded_bytes = 0;
 int num_failures = 0;
+int raw_free = 0;
+int padded_free = 0;
 
 // Part 1
 
@@ -88,6 +90,8 @@ void Init (size_t size) {
 addrs_t Malloc (size_t size) {
   struct node * pointer;
   struct node * look_ahead;
+  //get initial value before allignment
+  int initial_size = size;
   size = (size+(0x8-size%0x8)%0x8);
   pointer = Head;
   while(pointer!=NULL){
@@ -99,8 +103,8 @@ addrs_t Malloc (size_t size) {
   			//init_node_types_3(new,pointer->end,pointer->end+size,pointer->next);
   			pointer->next = new;
         count_malloc++;
+        raw_bytes += initial_size;
         padded_bytes += size;
-        raw_bytes += (uint64_t)(new->start)-(uint64_t)(new->end);
   			return new->start;
     		}
     }
@@ -109,8 +113,8 @@ addrs_t Malloc (size_t size) {
       init_node_types_2(new,pointer->end,pointer->end+size);
       pointer->next = new;
       count_malloc++;
+      raw_bytes += initial_size;
       padded_bytes += size;
-      raw_bytes += (uint64_t)(new->start)-(uint64_t)(new->end);
       return new->start;
     }
     pointer = look_ahead;
@@ -127,6 +131,8 @@ void Free (addrs_t addr) {
   while (temp!=NULL){
 	if (((char*)(temp->start)) == ((char*)(addr)) ){
     count_free++;
+    raw_free += (int)sizeof(temp)- (sizeof(temp->start)*2);
+    padded_free += (int)sizeof(temp);
 	  current->next = temp->next;
 	  free(temp);
 	  break;
@@ -256,9 +262,9 @@ int main (int argc, char **argv) {
   printf("Number of allocated blocks: %d\n",count_malloc);
   printf("Number of free blocks: %d\n",count_free);
   printf("Raw total number of bytes allocated:  %d\n",raw_bytes);
-  printf("Padded total number of bytes allocated: %d\n",padded_bytes);
-  printf("Raw total number of bytes free: %d\n",(raw_bytes-padded_bytes));
-  printf("Aligned total number of bytes free: %d\n",(raw_bytes-padded_bytes)*8);
+  printf("Padded total number of bytes allocated: %d\n",(padded_bytes));
+  printf("Raw total number of bytes free: %d\n",raw_free);
+  printf("Aligned total number of bytes free: %d\n",(mem_size-padded_bytes));
   printf("Total number of Malloc requests :%d\n", count_malloc);
   printf("Total number of Free requests :%d\n", count_free);
   printf("Total number of request failures: %d\n",num_failures);

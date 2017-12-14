@@ -37,6 +37,9 @@ int count_Vmalloc = 0;
 int raw_bytes = 0;
 int padded_bytes = 0;
 int num_failures = 0;
+int raw_free = 0;
+int padded_free = 0;
+
 
 // Part 1
 
@@ -90,12 +93,14 @@ void VInit (size_t size) { // heap alloc
 
 // VMalloc
 addrs_t * VMalloc (size_t size) {
+  //get initial value before allignment
+  int initial_size = size;
   size = (size+(0x8-size%0x8)%0x8);
   if (TOTALSIZE+Head->end - Tail->end >= size){ // IF we reach the end of the linked list, THEN check if there is space
     count_Vmalloc+= 1;
     raw_bytes += size;
+    padded_bytes += initial_size;
     struct node * new = malloc(sizeof(struct node));
-    padded_bytes +=((uint64_t)(new->start)-(uint64_t)(new->end));
     init_node_types_2(new,Tail->end,Tail->end+size);
     Tail->next = new;
 	Tail = new;
@@ -107,13 +112,16 @@ addrs_t * VMalloc (size_t size) {
     return (NULL);
   }
 }
+
 // VFree
 void VFree (addrs_t *addr) {
   struct node* current = Head;
   struct node* temp = current->next;
   while (temp!=NULL){
 	if (((char*)(&(temp->start))) == ((char*)(addr)) ){
-    count_Vfree+=1;
+    count_Vfree++;
+    raw_free += (int)sizeof(temp)- (sizeof(temp->start)*2);
+    padded_free += (int)sizeof(temp);
 	  current->next = temp->next;
 	  if (temp->next==NULL){
 		Tail = current;
@@ -135,6 +143,7 @@ void VFree (addrs_t *addr) {
   }
   num_failures++;
 }
+
 // VPut
 addrs_t* VPut (any_t data, size_t size) {
   addrs_t* rtnVal = VMalloc (size);
@@ -255,9 +264,9 @@ int main (int argc, char **argv) {
   printf("Number of allocated blocks: %d\n",count_Vmalloc);
   printf("Number of free blocks: %d\n",count_Vfree);
   printf("Raw total number of bytes allocated:  %d\n",raw_bytes);
-  printf("Padded total number of bytes allocated: %d\n",padded_bytes);
-  printf("Raw total number of bytes free: %d\n",(raw_bytes-padded_bytes));
-  printf("Aligned total number of bytes free: %d\n",(raw_bytes-padded_bytes)*8);
+  printf("Padded total number of bytes allocated: %d\n",(padded_bytes));
+  printf("Raw total number of bytes free: %d\n",raw_free);
+  printf("Aligned total number of bytes free: %d\n",(mem_size-padded_bytes));
   printf("Total number of Malloc requests :%d\n", count_Vmalloc);
   printf("Total number of Free requests :%d\n", count_Vfree);
   printf("Total number of request failures: %d\n",num_failures);
