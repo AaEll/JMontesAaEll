@@ -100,7 +100,7 @@ addrs_t Malloc (size_t size) {
   		if ((uint64_t)(look_ahead->start)-(uint64_t)(pointer->end)>=size){
   			// Make a new node and set pointer.next = to it, and its pointer to look_ahead
   			struct node * new = malloc(sizeof(struct node));
-  			//init_node_types_3(new,pointer->end,pointer->end+size,pointer->next);
+  			init_node_types_3(new,pointer->end,pointer->end+size,pointer->next);
   			pointer->next = new;
         count_malloc++;
         raw_bytes += initial_size;
